@@ -1,121 +1,144 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>注音輸入鍵盤</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注音輸入鍵盤 PWA</title>
 
-    <!-- PWA 基本 -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
 
-    <!-- iOS PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="注音鍵盤">
-    <link rel="apple-touch-icon" href="./icons/icon-192.png">
-
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
             margin: 0;
+            padding: 0;
             background: #fafafa;
+            font-family: system-ui, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
 
-        .display-area {
-            flex: 0 0 120px;
+        #output {
             padding: 20px;
             font-size: 32px;
             background: white;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
+            min-height: 80px;
         }
 
-        /* ========== 注音鍵盤（第一版風格） ========== */
         .keyboard {
-            flex: 1;
-            padding: 10px;
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 10px;
+            gap: 8px;
+            padding: 12px;
+            background: #fff;
+            margin-top: auto;
+            border-top: 1px solid #ddd;
         }
 
-        button.key {
-            padding: 14px 0;
-            font-size: 20px;
-            border-radius: 12px;
-            border: none;
-            background: #f2f2f7;
-            box-shadow: 0 2px 0 #d1d1d6;
-            transition: transform 0.1s;
+        .key {
+            padding: 16px 0;
+            background: #f1f1f1;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s, background 0.1s;
         }
 
-        button.key:active {
+        .key:active {
             transform: scale(0.92);
-            background: #e5e5ea;
+            background: #e1e1e1;
         }
 
-        .bottom-row {
-            grid-column: span 10;
-            display: grid;
-            grid-template-columns: 2fr 6fr 2fr;
-            gap: 10px;
+        .action {
+            background: #e8f2ff;
         }
     </style>
 </head>
+
 <body>
 
-<div class="display-area" id="display"></div>
+<div id="output"></div>
 
-<!-- 注音鍵盤（第一版配置） -->
-<div class="keyboard">
-    <!-- 注音符號主鍵盤 -->
-    <button class="key">ㄅ</button><button class="key">ㄆ</button><button class="key">ㄇ</button><button class="key">ㄈ</button><button class="key">ㄉ</button><button class="key">ㄊ</button><button class="key">ㄋ</button><button class="key">ㄌ</button><button class="key">ㄍ</button><button class="key">ㄎ</button>
-
-    <button class="key">ㄏ</button><button class="key">ㄐ</button><button class="key">ㄑ</button><button class="key">ㄒ</button><button class="key">ㄓ</button><button class="key">ㄔ</button><button class="key">ㄕ</button><button class="key">ㄖ</button><button class="key">ㄗ</button><button class="key">ㄘ</button>
-
-    <button class="key">ㄙ</button><button class="key">ㄧ</button><button class="key">ㄨ</button><button class="key">ㄩ</button><button class="key">ㄚ</button><button class="key">ㄛ</button><button class="key">ㄜ</button><button class="key">ㄝ</button><button class="key">ㄞ</button><button class="key">ㄟ</button>
-
-    <button class="key">ㄠ</button><button class="key">ㄡ</button><button class="key">ㄢ</button><button class="key">ㄣ</button><button class="key">ㄤ</button><button class="key">ㄥ</button><button class="key">ㄦ</button><button class="key">ˉ</button><button class="key">ˊ</button><button class="key">ˇ</button>
-
-    <button class="key">ˋ</button><button class="key">˙</button>
-
-    <!-- 下方功能鍵 -->
-    <div class="bottom-row">
-        <button class="key" id="delete">刪除</button>
-        <button class="key" id="space">空格</button>
-        <button class="key" id="enter">送出</button>
-    </div>
-</div>
+<!-- 注音鍵盤（第一版完整排列） -->
+<div class="keyboard" id="keyboard"></div>
 
 <script>
-const display = document.getElementById("display");
-document.querySelectorAll(".key").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const val = btn.textContent;
-        if (btn.id === "delete") {
-            display.textContent = display.textContent.slice(0, -1);
-            return;
-        }
-        if (btn.id === "space") {
-            display.textContent += " ";
-            return;
-        }
-        if (btn.id === "enter") {
-            alert("輸出內容： " + display.textContent);
-            return;
-        }
+// ------------------------------
+// 注音符號鍵盤（第一版）
+// ------------------------------
+const bopomofoKeys = [
+    "ㄅ","ㄆ","ㄇ","ㄈ","ㄉ","ㄊ","ㄋ","ㄌ","ㄍ","ㄎ",
+    "ㄏ","ㄐ","ㄑ","ㄒ","ㄓ","ㄔ","ㄕ","ㄖ","ㄗ","ㄘ",
+    "ㄙ","ㄚ","ㄛ","ㄜ","ㄝ","ㄞ","ㄟ","ㄠ","ㄡ","ㄢ",
+    "ㄣ","ㄤ","ㄥ","ㄦ","ㄧ","ㄨ","ㄩ",
+    "刪除","清空","組字"
+];
 
-        display.textContent += val;
-    });
+const output = document.getElementById("output");
+const keyboard = document.getElementById("keyboard");
+
+// 動態建立鍵盤
+bopomofoKeys.forEach(k => {
+    const btn = document.createElement("div");
+    btn.className = "key" + (["刪除","清空","組字"].includes(k) ? " action" : "");
+    btn.textContent = k;
+    btn.onclick = () => handleKey(k);
+    keyboard.appendChild(btn);
 });
 
-/* PWA 註冊 */
+let buffer = "";
+
+// 中文語音
+function speak(text) {
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = "zh-TW";
+    speechSynthesis.speak(utt);
+}
+
+// 注音 → 國字（超迷你示範，你之後可換成大字庫 JSON）
+const map = {
+    "ㄋㄧ": "你",
+    "ㄨㄛˇ": "我",
+    "ㄓㄜˋ": "這",
+};
+
+// 處理按鍵事件
+function handleKey(k) {
+    if (k === "刪除") {
+        buffer = buffer.slice(0, -1);
+        output.textContent = buffer;
+        speak("刪除");
+        return;
+    }
+
+    if (k === "清空") {
+        buffer = "";
+        output.textContent = buffer;
+        speak("清空");
+        return;
+    }
+
+    if (k === "組字") {
+        const word = map[buffer] || "(無對應)";
+        output.textContent = word;
+        speak("等於 " + word);
+        buffer = "";
+        return;
+    }
+
+    buffer += k;
+    output.textContent = buffer;
+    speak(k);
+}
+
+// ------------------------------
+// Service Worker 註冊
+// ------------------------------
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js");
 }
