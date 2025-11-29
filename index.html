@@ -1,232 +1,124 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>可愛注音練習</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>注音輸入鍵盤</title>
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="注音練習">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+    <!-- PWA 基本 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
 
-<style>
-    body {
-        margin: 0;
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        font-family: "Helvetica Neue", sans-serif;
-        background: #f8f9ff;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
-    }
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="注音鍵盤">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
 
-    /* 上方注音顯示區 */
-    #displayArea {
-        text-align: center;
-        font-size: 40px;
-        padding: 20px;
-        height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+            margin: 0;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
 
-    #bopomofoOutput {
-        font-size: 42px;
-        margin-bottom: 10px;
-    }
-    #candidateArea {
-        font-size: 30px;
-        flex-wrap: wrap;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-    }
-    .candidate {
-        padding: 6px 14px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.7);
-        backdrop-filter: blur(12px);
-        cursor: pointer;
-        font-size: 30px;
-    }
-    .candidate:active {
-        transform: scale(0.92);
-    }
+        .display-area {
+            flex: 0 0 120px;
+            padding: 20px;
+            font-size: 32px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border-bottom: 1px solid #ddd;
+        }
 
-    /* 按鍵 */
-    .keyboard {
-        flex: 1;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        padding: 10px;
-        overflow-y: auto;
-    }
+        /* ========== 注音鍵盤（第一版風格） ========== */
+        .keyboard {
+            flex: 1;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+        }
 
-    .keyboard button {
-        width: 65px;
-        height: 65px;
-        margin: 6px;
-        font-size: 28px;
-        border-radius: 16px;
-        border: 1px solid rgba(255,255,255,0.4);
-        backdrop-filter: blur(14px);
-        background: rgba(255,255,255,0.45);
-        cursor: pointer;
-        transition: 0.15s;
-    }
+        button.key {
+            padding: 14px 0;
+            font-size: 20px;
+            border-radius: 12px;
+            border: none;
+            background: #f2f2f7;
+            box-shadow: 0 2px 0 #d1d1d6;
+            transition: transform 0.1s;
+        }
 
-    .keyboard button:active {
-        transform: scale(0.88);
-        background: rgba(255,255,255,0.7);
-    }
+        button.key:active {
+            transform: scale(0.92);
+            background: #e5e5ea;
+        }
 
-    .function-key {
-        background: rgba(255,180,200,0.5);
-    }
-
-</style>
+        .bottom-row {
+            grid-column: span 10;
+            display: grid;
+            grid-template-columns: 2fr 6fr 2fr;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
 
-<div id="displayArea">
-    <div id="bopomofoOutput"></div>
-    <div id="candidateArea"></div>
-</div>
+<div class="display-area" id="display"></div>
 
-<!-- ===== 鍵盤（第一版） ===== -->
-<div class="keyboard" id="keyboard">
-    <!-- 第 1 列 -->
-    <button>ㄅ</button><button>ㄆ</button><button>ㄇ</button><button>ㄈ</button>
-    <button>ㄉ</button><button>ㄊ</button><button>ㄋ</button><button>ㄌ</button>
+<!-- 注音鍵盤（第一版配置） -->
+<div class="keyboard">
+    <!-- 注音符號主鍵盤 -->
+    <button class="key">ㄅ</button><button class="key">ㄆ</button><button class="key">ㄇ</button><button class="key">ㄈ</button><button class="key">ㄉ</button><button class="key">ㄊ</button><button class="key">ㄋ</button><button class="key">ㄌ</button><button class="key">ㄍ</button><button class="key">ㄎ</button>
 
-    <!-- 第 2 列 -->
-    <button>ㄍ</button><button>ㄎ</button><button>ㄏ</button><button>ㄐ</button>
-    <button>ㄑ</button><button>ㄒ</button><button>ㄓ</button><button>ㄔ</button>
-    <button>ㄕ</button><button>ㄖ</button>
+    <button class="key">ㄏ</button><button class="key">ㄐ</button><button class="key">ㄑ</button><button class="key">ㄒ</button><button class="key">ㄓ</button><button class="key">ㄔ</button><button class="key">ㄕ</button><button class="key">ㄖ</button><button class="key">ㄗ</button><button class="key">ㄘ</button>
 
-    <!-- 第 3 列 -->
-    <button>ㄗ</button><button>ㄘ</button><button>ㄙ</button>
-    <button>ㄧ</button><button>ㄨ</button><button>ㄩ</button>
+    <button class="key">ㄙ</button><button class="key">ㄧ</button><button class="key">ㄨ</button><button class="key">ㄩ</button><button class="key">ㄚ</button><button class="key">ㄛ</button><button class="key">ㄜ</button><button class="key">ㄝ</button><button class="key">ㄞ</button><button class="key">ㄟ</button>
 
-    <!-- 第 4 列（韻母） -->
-    <button>ㄚ</button><button>ㄛ</button><button>ㄜ</button><button>ㄝ</button>
-    <button>ㄞ</button><button>ㄟ</button><button>ㄠ</button><button>ㄡ</button>
-    <button>ㄢ</button><button>ㄣ</button><button>ㄤ</button><button>ㄥ</button>
-    <button>ㄦ</button>
+    <button class="key">ㄠ</button><button class="key">ㄡ</button><button class="key">ㄢ</button><button class="key">ㄣ</button><button class="key">ㄤ</button><button class="key">ㄥ</button><button class="key">ㄦ</button><button class="key">ˉ</button><button class="key">ˊ</button><button class="key">ˇ</button>
 
-    <!-- 功能鍵 -->
-    <button id="clearKey" class="function-key">清除</button>
-    <button id="readKey" class="function-key">讀音</button>
+    <button class="key">ˋ</button><button class="key">˙</button>
+
+    <!-- 下方功能鍵 -->
+    <div class="bottom-row">
+        <button class="key" id="delete">刪除</button>
+        <button class="key" id="space">空格</button>
+        <button class="key" id="enter">送出</button>
+    </div>
 </div>
 
 <script>
-/* ==========================
-   注音 → 發音示例（正確版）
-   ========================== */
-const sampleMap = {
-  'ㄅ':'波','ㄆ':'坡','ㄇ':'摸','ㄈ':'ㄈ',
-  'ㄉ':'ㄉ','ㄊ':'ㄊ','ㄋ':'ㄋ','ㄌ':'ㄌ',
-  'ㄍ':'哥','ㄎ':'科','ㄏ':'喝','ㄐ':'雞',
-  'ㄑ':'七','ㄒ':'西', /* 修正 */
-  'ㄓ':'之','ㄔ':'吃','ㄕ':'是','ㄖ':'日',
-  'ㄗ':'資','ㄘ':'ㄘ','ㄙ':'思',
-  'ㄧ':'伊', /* 修正 */
-  'ㄨ':'屋','ㄩ':'瘀',
-  'ㄚ':'阿','ㄛ':'喔','ㄜ':'鵝','ㄝ':'耶',
-  'ㄞ':'愛','ㄟ':'欸','ㄠ':'凹','ㄡ':'歐',
-  'ㄢ':'安','ㄣ':'恩','ㄤ':'昂','ㄥ':'ㄥ','ㄦ':'兒'
-};
+const display = document.getElementById("display");
+document.querySelectorAll(".key").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const val = btn.textContent;
+        if (btn.id === "delete") {
+            display.textContent = display.textContent.slice(0, -1);
+            return;
+        }
+        if (btn.id === "space") {
+            display.textContent += " ";
+            return;
+        }
+        if (btn.id === "enter") {
+            alert("輸出內容： " + display.textContent);
+            return;
+        }
 
-/* ==========================
-   注音 → 國字（示例字庫）
-   （你之後可替換完整 JSON）
-   ========================== */
-const dictionary = {
-  "ㄅㄚ": ["吧","八","爸","拔"],
-  "ㄅㄞ": ["白","百","拜"],
-  "ㄅㄠ": ["包","胞","寶"],
-  "ㄧ": ["一","伊","依"],
-  "ㄒㄧ": ["希","喜","希"],
-  "ㄧㄥ": ["英","應","嬰"]
-};
-
-/* ==========================
-   狀態
-   ========================== */
-let bopomofo = "";
-
-/* ==========================
-   DOM
-   ========================== */
-const output = document.getElementById("bopomofoOutput");
-const candidateArea = document.getElementById("candidateArea");
-
-/* ==========================
-   語音功能
-   ========================== */
-function speak(text) {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "zh-TW";
-    speechSynthesis.speak(utter);
-}
-
-/* ==========================
-   更新候選字
-   ========================== */
-function updateCandidates() {
-    candidateArea.innerHTML = "";
-
-    if (dictionary[bopomofo]) {
-        dictionary[bopomofo].forEach(c => {
-            const btn = document.createElement("div");
-            btn.className = "candidate";
-            btn.textContent = c;
-            btn.onclick = () => {
-                output.textContent = c;
-                bopomofo = "";
-                candidateArea.innerHTML = "";
-            };
-            candidateArea.appendChild(btn);
-        });
-    }
-}
-
-/* ==========================
-   鍵盤按下
-   ========================== */
-document.getElementById("keyboard").addEventListener("click", e => {
-    if (e.target.tagName !== "BUTTON") return;
-
-    const key = e.target.textContent;
-
-    if (key === "清除") {
-        bopomofo = "";
-        output.textContent = "";
-        candidateArea.innerHTML = "";
-        return;
-    }
-
-    if (key === "讀音") {
-        if (output.textContent !== "") speak(output.textContent);
-        return;
-    }
-
-    // 添加注音
-    bopomofo += key;
-    output.textContent = bopomofo;
-
-    // 唸按鍵（清除語音已關閉）
-    if (sampleMap[key]) speak(sampleMap[key]);
-
-    updateCandidates();
+        display.textContent += val;
+    });
 });
 
+/* PWA 註冊 */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+}
 </script>
 
 </body>
